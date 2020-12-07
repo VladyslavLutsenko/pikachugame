@@ -16,6 +16,7 @@ const character = {
   renderProgressBarHp: renderProgressBarHp,
   changeHP: changeHP,
 };
+
 const enemy = {
   name: "Charmander",
   defaultHp: 100,
@@ -27,16 +28,35 @@ const enemy = {
   renderProgressBarHp: renderProgressBarHp,
   changeHP: changeHP,
 };
-$btn.addEventListener("click", function () {
+
+function initCount(){
+    var c=0;
+    return function (){
+        c+= 1;
+        if (c<6) {
+            console.log(c);
+            console.log(`Осталось ${6-c} нажатий`);
+        }
+        else {
+            $btn.disabled = true;
+            $bts.disabled = true;
+            alert("количество попыток закончилось")
+        }
+    }
+}
+const pressCount = initCount();
+
+$btn.addEventListener("click",  () =>{
   character.changeHP(random(20));
   enemy.changeHP(random(20));
+  pressCount();
 });
 
-$bts.addEventListener('click',function(){   
+$bts.addEventListener('click',() =>{   
     enemy.changeHP(100);
 })
 
-function init() {
+const init = () => {
   console.log("Start Game");
   character.renderHP();
   enemy.renderHP();
@@ -78,11 +98,11 @@ function changeHP(count) {
   $logs.insertBefore($p, $logs.children[0]);
 }
 
-function random(num) {
+const random = (num) => {
   return Math.ceil(Math.random() * num);
 }
 
-function generateLog(firstPerson, secondPerson) {
+const generateLog= (firstPerson, secondPerson) => {
     const { name: name1, damageHP, defaultHp } = firstPerson;
     const { name: name2 } = secondPerson;
   
