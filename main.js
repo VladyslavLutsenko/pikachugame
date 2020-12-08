@@ -1,85 +1,145 @@
 import Pokemon from "./pokemon.js";
 import random from "./utils.js";
+import pokemons from "./pokemons.js";
 
-const player1 = new Pokemon({
-    name: 'Pikachu',
-    type: 'electric',
-    hp: 100,
-    selectors: 'character'
+const $control=document.querySelector('.control');
+
+let level=1;
+
+let player1PokemonId=random(6);
+let player1Pokemon = pokemons.find(item => item.id === player1PokemonId);
+
+let player2PokemonId=random(6);
+let player2Pokemon = pokemons.find(item => item.id === player2PokemonId);
+
+let player1 = new Pokemon({
+    ...player1Pokemon,
+    selectors: 'player1'
 });
 console.log(player1);
 
-const player2 = new Pokemon({
-    name: 'Charmander',
-    type: 'fire',
-    hp: 100,
-    selectors: 'enemy'
+let player2 = new Pokemon({
+  ...player2Pokemon,
+  selectors: 'player2'
 });
 console.log(player2);
 
-function $getElementById(id) {
-  return document.getElementById(id);
-}
 
-const $btn = $getElementById("btn-kick");
-const $bts = $getElementById('btn-kill');
+player1.attacks.forEach(item => {
+  const $btn = document.createElement('button');
+  $btn.classList.add('button');
+  $btn.innerText = item.name;
+  const pressCount = initCount(item.maxCount, $btn);
+  $btn.addEventListener('click', ()=>{
+    console.log('Click button', $btn.innerText)
+    pressCount();
+    var status=true;
+    player1.changeHP(random(20), function(count, hp) {
+      //console.log("some change after change HP", count);
+      if (status) {
+        const log = generateLog(player1, player2, count)
+        console.log(log);
+        const $p = document.createElement("p");
+        $p.innerText = log;
+        $logs.insertBefore($p, $logs.children[0]);
+      }
+      if (hp==0) {
+        renderStartNewGameButton();
+        status=false;
+      }
+    });
+    player2.changeHP(random(20), function(count, hp) {
+      //console.log("some change after change HP", count);
+      if (status) {
+        const log = generateLog(player2, player1, count)
+        console.log(log);
+        const $p = document.createElement("p");
+        $p.innerText = log;
+        $logs.insertBefore($p, $logs.children[0]);
+      }
+      if (hp==0) {
+        renderNewEnemyButton();
+        status=false;
+      }
+    });
 
-
-function initCount(){
-    var c=0;
-    return function (){
-        c+= 1;
-        if (c<6) {
-            console.log(c);
-            console.log(`Осталось ${6-c} нажатий`);
-        }
-        else {
-            $btn.disabled = true;
-            $bts.disabled = true;
-            alert("количество попыток закончилось")
-        }
-    }
-}
-const pressCount = initCount();
-
-$btn.addEventListener("click",  () =>{
-  player1.changeHP(random(20), function(count) {
-    console.log("some change after change HP", count);
-    const log = generateLog(player1, player2, count)
-    console.log(log);
-    const $p = document.createElement("p");
-    $p.innerText = log;
-    $logs.insertBefore($p, $logs.children[0]);
-
-  });
-  player2.changeHP(random(20), function(count) {
-    console.log("some change after change HP", count);
-    const log = generateLog(player2, player1, count)
-    console.log(log);
-    const $p = document.createElement("p");
-    $p.innerText = log;
-    $logs.insertBefore($p, $logs.children[0]);
-  
-  });
-  
-  pressCount();
+  })
+  $control.appendChild($btn);
 });
 
-$bts.addEventListener('click',() =>{   
-    player2.changeHP(100);
-})
 
-const init = () => {
-  console.log("Start Game");
+function startGame() {
+  location.reload();
+}
+
+function renderStartNewGameButton() {
+  const allButtons = document.querySelectorAll('.control .button');
+  allButtons.forEach(item => item.remove());
+
+
+  const allLogs = document.querySelectorAll('#logs p');
+  allLogs.forEach(item => item.remove());
+
+
+  const $btn = document.createElement('button');
+  $btn.classList.add('button');
+  $btn.innerText = "Start New Game";
+  $btn.addEventListener('click', ()=>{
+    startGame();
+  })
+  $control.appendChild($btn);
+}
+
+function renderNewEnemyButton() {
+  const $btn = document.createElement('button');
+  $btn.classList.add('button');
+  $btn.innerText = "New Enemy";
+  $btn.addEventListener('click', ()=>{
+    renderEnemy();
+    $btn.remove();
+  })
+  $control.appendChild($btn);
+}
+
+function renderEnemy() {
+  level++;
+  player2PokemonId=random(6);
+  player2Pokemon = pokemons.find(item => item.id === player2PokemonId);
+
+  player2 = new Pokemon({
+    ...player2Pokemon,
+    selectors: 'player2'
+  });
+  console.log(player2);
+  let lvl=document.getElementById(`lvl`);
+  lvl.innerText=`Lv. ${level}`
+
+
+
+
+
+
+}
+
+
+function initCount(c, btn){
+    var count=c;
+    return function (){
+      if (count>1) {
+        count -= 1;
+        console.log(`Осталось ${count} нажатий`);
+      }
+      else if(count=1){
+        count -= 1;
+        btn.disabled=true;
+        alert("количество попыток закончилось")
+      }
+    }
 }
 
 
 
 const $logs = document.querySelector("#logs");
-
-
-
-
 
 const generateLog= (firstPerson, secondPerson) => {
     const { name: name1, hp: {current, total} } = firstPerson;
@@ -100,4 +160,3 @@ const generateLog= (firstPerson, secondPerson) => {
     return logs[random(logs.length) - 1];
 }
 
-init();
