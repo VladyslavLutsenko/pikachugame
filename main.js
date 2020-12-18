@@ -9,7 +9,11 @@ let level=1;
 let player1PokemonId=random(6);
 let player1Pokemon = pokemons.find(item => item.id === player1PokemonId);
 
-let player2PokemonId=random(6);
+let player2PokemonId=player1PokemonId;
+while (player2PokemonId==player1PokemonId){
+  player2PokemonId=random(6);
+}
+
 let player2Pokemon = pokemons.find(item => item.id === player2PokemonId);
 
 let player1 = new Pokemon({
